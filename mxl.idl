@@ -1,0 +1,29 @@
+// mxl.idl : mxl.exe에 대한 형식 라이브러리 소스
+
+// 이 파일은 MIDL 컴파일러에 의해 처리되어
+// 형식 라이브러리(mxl.tlb)를 생성합니다.
+
+[ uuid(FE3DE4CA-8910-4D51-B4AE-517D93B007FB), version(1.0) ]
+library mxl
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//  CmxlDoc의 기본 디스패치 인터페이스
+	
+	[ uuid(E48FA626-FCAD-4106-A7F3-AD79F860587E) ]
+	dispinterface Imxl
+	{
+		properties:
+			
+		methods:
+	};
+
+	//  CmxlDoc의 클래스 정보
+	
+	[ uuid(499EAC6E-E52D-4750-99EC-DB0853D183EA) ]
+	coclass mxl
+	{
+		[default] dispinterface Imxl;
+	};
+};
