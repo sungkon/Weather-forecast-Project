@@ -19,6 +19,8 @@ class CAboutDlg : public CDialogEx
 {
 public:
 	CAboutDlg();
+//	static UINT ThreadFirst(LPVOID _mothod);
+	
 
 // 대화 상자 데이터입니다.
 	enum { IDD = IDD_ABOUTBOX };
@@ -68,6 +70,7 @@ CmxlDlg::~CmxlDlg()
 void CmxlDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_PICVIEW, maps);
 }
 
 BEGIN_MESSAGE_MAP(CmxlDlg, CDialogEx)
@@ -110,7 +113,6 @@ BOOL CmxlDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
-
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -147,6 +149,18 @@ void CmxlDlg::OnPaint()
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
+		CDC memDC;
+		memDC.CreateCompatibleDC(maps.GetDC());
+		CBitmap	bitmap;
+		bitmap.LoadBitmap(IDB_BITMAP1);
+		memDC.SelectObject(&bitmap);
+
+		CStatic *staticSize = (CStatic*)GetDlgItem(IDC_PICVIEW);
+		CRect RECT;
+		staticSize->GetClientRect(rect);
+		int iwidth = rect.Width();
+		int iheight = rect.Height();
+		maps.GetDC()->StretchBlt(0, 0, iwidth, iheight, &memDC, 0, 0, 149, 220, SRCCOPY);
 		// 아이콘을 그립니다.
 		dc.DrawIcon(x, y, m_hIcon);
 	}
@@ -174,24 +188,22 @@ void CmxlDlg::OnClose()
 	if (CanExit())
 		CDialogEx::OnClose();
 }
-
-void CmxlDlg::OnOK()
+/*
+UINT ThreadFirst(LPVOID inval)
 {
+	int val = (int)inval;
+
 	MSXML2::IXMLDOMDocument2Ptr pDoc;
+
+	MSXML2::IXMLDOMNodeListPtr pNodeList;
 	pDoc.CreateInstance(__uuidof(MSXML2::DOMDocument));
 
 	DWORD startTick = GetTickCount();
 	pDoc->put_async(VARIANT_FALSE);
+
 	HRESULT hr = pDoc->load((_variant_t)"http://www.kma.go.kr/wid/queryDFSRSS.jsp?zone=1159068000");
-	if (hr == 0)
-	{
-		AfxMessageBox(_T("로딩에러"));
-		return;
-	}
 
-	MSXML2::IXMLDOMNodeListPtr pNodeList;
 	pNodeList = pDoc->selectNodes(L"//data ");
-
 
 	CString outTotalString;
 	CStringArray array;
@@ -203,12 +215,81 @@ void CmxlDlg::OnOK()
 
 		outTotalString.Append(outString);
 		array[i] = outString;
+	}
+	AfxMessageBox(array[0]);
+	//	Sleep(1000);2
+	return 0;
+}
+*/
 
+UINT ThreadFirst(LPVOID inval)
+{
+	CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	MSXML2::IXMLDOMDocument2Ptr pDoc;
+
+	MSXML2::IXMLDOMNodeListPtr pNodeList;
+	pDoc.CreateInstance(__uuidof(MSXML2::DOMDocument));
+
+	DWORD startTick = GetTickCount();
+	pDoc->put_async(VARIANT_FALSE);
+
+	HRESULT hr = pDoc->load((_variant_t)"http://www.kma.go.kr/wid/queryDFSRSS.jsp?zone=1159068000");
+
+	CString outTotalString;
+	CStringArray array;
+	array.SetSize(160);
+	for (int i = 0; i < 3; i++)
+	{
+		CString outString;
+		
+		pNodeList = pDoc->selectNodes(L"//hour");
+		outString.Format(_T("%s\n"), (LPCTSTR)pNodeList->Getitem(i*8)->Gettext());
+		outTotalString.Append(outString);
+		array[i*8] = outString;
+		pNodeList = pDoc->selectNodes(L"//temp");
+		outString.Format(_T("%s\n"), (LPCTSTR)pNodeList->Getitem(i*8)->Gettext());
+		outTotalString.Append(outString);
+		array[i * 8+1] = outString;
+		pNodeList = pDoc->selectNodes(L"//sky");
+		outString.Format(_T("%s\n"), (LPCTSTR)pNodeList->Getitem(i * 8)->Gettext());
+		outTotalString.Append(outString);
+		array[i * 8+2] = outString;
+		pNodeList = pDoc->selectNodes(L"//pty");
+		outString.Format(_T("%s\n"), (LPCTSTR)pNodeList->Getitem(i * 8)->Gettext());
+		outTotalString.Append(outString);
+		array[i * 8+3] = outString;
+		pNodeList = pDoc->selectNodes(L"//pop");
+		outString.Format(_T("%s\n"), (LPCTSTR)pNodeList->Getitem(i * 8)->Gettext());
+		outTotalString.Append(outString);
+		array[i * 8+4] = outString;
+		pNodeList = pDoc->selectNodes(L"//r12");
+		outString.Format(_T("%s\n"), (LPCTSTR)pNodeList->Getitem(i * 8)->Gettext());
+		outTotalString.Append(outString);
+		array[i * 8+5] = outString;
+		pNodeList = pDoc->selectNodes(L"//s12");
+		outString.Format(_T("%s\n"), (LPCTSTR)pNodeList->Getitem(i * 8)->Gettext());
+		outTotalString.Append(outString);
+		array[i * 8+6] = outString;
+		pNodeList = pDoc->selectNodes(L"//reh");
+		outString.Format(_T("%s\n"), (LPCTSTR)pNodeList->Getitem(i * 8)->Gettext());
+		outTotalString.Append(outString);
+		array[i * 8+7] = outString;
 	}
 
-	AfxMessageBox(array[0]);
+
+	AfxMessageBox(array[23]);
+
+	return 0;
+}
+
+
+void CmxlDlg::OnOK()
+{
+
+	AfxBeginThread(ThreadFirst, this);
 
 }
+
 
 void CmxlDlg::OnCancel()
 {
